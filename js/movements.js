@@ -11,27 +11,29 @@ async function procesarMovimiento() {
     if (isNaN(cant) || cant <= 0) { alert('Ingresa una cantidad válida mayor a 0.'); return; }
 
     const btn = document.getElementById('btnRegistrar');
-    btn.textContent = '⏳ Registrando…'; btn.disabled = true;
+    btn.textContent = '⏳ Registrando…';
+    btn.disabled = true;
 
-    const payload = withEmpresa({
+    const payload = {
         action: 'write',
-        mov:  document.getElementById('tipoMov').value.toUpperCase(),
+        mov: document.getElementById('tipoMov').value.toUpperCase(),
         prod: document.getElementById('prod').value.toUpperCase(),
         cant,
-        ref:  document.getElementById('referencia').value || 'DESPACHO',
+        ref: document.getElementById('referencia').value || 'DESPACHO',
         fechaManual: document.getElementById('fechaMov').value || null
-    });
+    };
 
     try {
-        await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-        document.getElementById('cant').value       = '';
+        const res = await apiPost(payload);
+        document.getElementById('cant').value = '';
         document.getElementById('referencia').value = '';
-        document.getElementById('fechaMov').value   = '';
-        alert('✅ Registro enviado al servidor. Actualizando…');
-        setTimeout(cargarDatos, 2000);
-    } catch(e) {
-        alert('❌ Error de conexión con el servidor.');
+        document.getElementById('fechaMov').value = '';
+        alert(res.message || '✅ Registro guardado correctamente.');
+        await cargarDatos();
+    } catch (e) {
+        if (!handleAuthError(e)) alert(e.message || '❌ Error de conexión con el servidor.');
     } finally {
-        btn.textContent = 'Guardar Registro'; btn.disabled = false;
+        btn.textContent = 'Guardar Registro';
+        btn.disabled = false;
     }
 }

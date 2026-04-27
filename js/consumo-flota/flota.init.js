@@ -161,6 +161,10 @@ function logout() {
 
 window.onload = async () => {
     const rol = sessionStorage.getItem('rolGrifo');
+    if (!sessionStorage.getItem('tokenGrifo')) {
+        window.location.href = 'index.html';
+        return;
+    }
     const anioActual = new Date().getFullYear();
 
     // 1. Poblar selectores

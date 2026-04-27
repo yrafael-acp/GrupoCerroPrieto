@@ -75,12 +75,27 @@
             <a href="grifo_control.html" class="btn btn-primary btn-sm only-admin-grifo" style="display:none;">⛽ Grifo Control</a>
             <a href="Saldo_comb.html" class="btn btn-ghost btn-sm">📏 Varilla</a>
             <a href="consumo-flota.html" class="btn btn-green btn-sm">🚛 Flota</a>
+            <a href="admin.html" class="btn btn-ghost btn-sm admin-only" style="display:none;">🛠️ Admin</a>
             <button onclick="logout()" class="btn btn-danger btn-sm">Salir</button>
         </div>
     </header>
 
     <!-- GRID DASHBOARD -->
     <main class="dashboard">
+
+        <!-- V3 PANEL SALUD DEL SISTEMA -->
+        <div class="card admin-only" id="v3StatusCard" style="display:none;">
+            <h3 class="card-title"><span class="icon">🩺</span> Estado del Sistema</h3>
+            <div id="v3StatusSummary" class="metric-grid" style="margin-bottom:14px;"></div>
+            <div id="v3StatusAlerts" style="display:grid;gap:10px;"></div>
+        </div>
+
+        <!-- V3 PANEL CORPORATIVO -->
+        <div class="card admin-only" id="v3CorporateCard" style="display:none;">
+            <h3 class="card-title"><span class="icon">🏢</span> Panel Corporativo</h3>
+            <div id="v3CorporateSummary" class="metric-grid" style="margin-bottom:14px;"></div>
+            <div id="v3CorporateCompanies" style="display:grid;gap:10px;"></div>
+        </div>
 
         <!-- 1. REGISTRO DE MOVIMIENTO -->
         <div class="card admin-only" id="registroCard">
@@ -352,6 +367,7 @@
 <script src="js/simulator.js"></script>
 <script src="js/varilla.js"></script>
 <script src="js/helpers.js"></script>
+<script src="js/v3.js"></script>
 <script src="js/init.js"></script>
 </body>
 </html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Administrativo · Grupo Cerro Prieto</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div id="mainContent" style="display:block;max-width:1400px;margin:0 auto;padding:20px;">
+  <header class="app-header">
+    <div class="app-header-brand">
+      <img src="logo.png" alt="ACP">
+      <div>
+        <h1>Administración del Sistema — <span id="displayUser"></span></h1>
+        <div class="sync-bar"><span class="sync-dot"></span> Panel v4 · <span id="displayYear"></span></div>
+      </div>
+    </div>
+    <div class="app-header-actions">
+      <a href="index.html" class="btn btn-ghost btn-sm">← Volver</a>
+      <a href="consumo-flota.html" class="btn btn-green btn-sm">🚛 Flota</a>
+      <button onclick="logout()" class="btn btn-danger btn-sm">Salir</button>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <div class="card">
+      <h3 class="card-title"><span class="icon">🧭</span> Resumen Ejecutivo</h3>
+      <div id="adminSummary" class="metric-grid"></div>
+    </div>
+
+    <div class="admin-layout">
+      <div class="admin-stack">
+        <div class="card">
+          <h3 class="card-title"><span class="icon">🏢</span> Empresas</h3>
+          <div id="adminCorporate" style="display:grid;gap:12px;"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;">
+            <h3 class="card-title" style="margin:0"><span class="icon">⚙️</span> Configuración</h3>
+            <div class="admin-actions superadmin-only" style="display:none;">
+              <button id="btnSaveConfigV4" class="btn btn-primary btn-sm" onclick="guardarConfigV4()">Guardar cambios</button>
+            </div>
+          </div>
+          <div id="configRows" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <div class="admin-stack">
+        <div class="card">
+          <h3 class="card-title"><span class="icon">🚨</span> Alertas</h3>
+          <div id="adminAlerts" class="integrity-list"></div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title"><span class="icon">🧪</span> Integridad</h3>
+          <div id="integrityList" class="integrity-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;">
+        <h3 class="card-title" style="margin:0"><span class="icon">📜</span> Bitácora Avanzada</h3>
+        <div class="admin-actions"><button class="btn btn-ghost btn-sm" onclick="cargarLogsV4()">Actualizar</button></div>
+      </div>
+      <div class="admin-filter-row" style="margin-top:12px;">
+        <select id="logEmpresa"><option value="">Todas las empresas</option><option value="ACP">ACP</option><option value="QALI">QALI</option></select>
+        <input id="logModulo" placeholder="Módulo (ej. CONFIG, MOVIMIENTOS)">
+        <input id="logAccion" placeholder="Acción (ej. SAVE_CONFIG_V4)">
+        <select id="logEstado"><option value="">Todos los estados</option><option value="OK">OK</option><option value="ERROR">ERROR</option></select>
+        <button class="btn btn-primary btn-sm" onclick="cargarLogsV4()">Filtrar</button>
+      </div>
+      <div class="admin-filter-row compact">
+        <input type="date" id="logDesde">
+        <input type="date" id="logHasta">
+        <div class="admin-actions"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('logDesde').value='';document.getElementById('logHasta').value='';document.getElementById('logEmpresa').value='';document.getElementById('logModulo').value='';document.getElementById('logAccion').value='';document.getElementById('logEstado').value='';cargarLogsV4();">Limpiar</button></div>
+      </div>
+      <div id="logsTableWrap"></div>
+    </div>
+
+    <div class="card">
+      <h3 class="card-title"><span class="icon">🕘</span> Actividad Reciente</h3>
+      <div id="adminRecentLogs"></div>
+    </div>
+  </main>
+</div>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

@@ -3,10 +3,9 @@
 ============================================================ */
 async function gestionarFiltros(accion, tipo, equipo = '') {
     try {
-        const res = await fetch(WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify(withEmpresa({ action: 'updateFiltros', subAction: accion, tipo, equipo }))
-        });
-        if (res.ok) cargarDatos();
-    } catch(e) { alert('Error al actualizar filtros.'); }
+        await apiPost({ action: 'updateFiltros', subAction: accion, tipo, equipo });
+        await cargarDatos();
+    } catch (e) {
+        if (!handleAuthError(e)) alert(e.message || 'Error al actualizar filtros.');
+    }
 }

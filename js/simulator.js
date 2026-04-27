@@ -71,9 +71,7 @@ function actualizarCalculosSimulacion() {
 
     clearTimeout(timerApertura);
     timerApertura = setTimeout(() => {
-        fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors',
-            body: JSON.stringify(withEmpresa({ action:'saveSimDual', user:getCurrentUser(), producto:'CONFIG_INICIAL', data:{ dieselIni:sD, gasoholIni:sG }, apertura:{ diesel:sD, gasohol:sG } }))
-        }).catch(() => {});
+        apiPost({ action:'saveSimDual', user:getCurrentUser(), producto:'CONFIG_INICIAL', data:{ dieselIni:sD, gasoholIni:sG }, apertura:{ diesel:sD, gasohol:sG } }).catch(() => {});
     }, 1000);
 
     let totalD = 0, totalG = 0;
@@ -129,14 +127,8 @@ async function guardarProyeccionSemanal() {
     };
 
     try {
-        await fetch(WEB_APP_URL, {
-            method: 'POST', mode: 'no-cors',
-            body: JSON.stringify(withEmpresa({ action:'saveSimDual', user:getCurrentUser(), producto:'DIESEL', data:proyeccionesDual, apertura }))
-        });
-        await fetch(WEB_APP_URL, {
-            method: 'POST', mode: 'no-cors',
-            body: JSON.stringify(withEmpresa({ action:'saveSimDual', user:getCurrentUser(), producto:'GASOHOL', data:proyeccionesDual, apertura }))
-        });
+        await apiPost({ action:'saveSimDual', user:getCurrentUser(), producto:'DIESEL', data:proyeccionesDual, apertura });
+        await apiPost({ action:'saveSimDual', user:getCurrentUser(), producto:'GASOHOL', data:proyeccionesDual, apertura });
         alert('✅ Proyección y apertura guardadas correctamente.');
     } catch(e) {
         alert('❌ Error al guardar. Intenta nuevamente.');

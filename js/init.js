@@ -3,11 +3,17 @@
 ============================================================ */
 window.addEventListener('load', () => {
     const sess = sessionStorage.getItem('sessionGrifo');
-    if (sess && sessionStorage.getItem('rolGrifo')) startSession(sess);
+    const role = sessionStorage.getItem('rolGrifo');
+    const token = sessionStorage.getItem('tokenGrifo');
+    if (sess && role && token && !isSessionExpired()) {
+        startSession(sess);
+    } else {
+        sessionStorage.clear();
+    }
 });
 
 setInterval(() => {
-    if (currentUser) cargarDatos();
+    if (currentUser && !isSessionExpired()) cargarDatos();
 }, 60000);
 
 document.addEventListener('keydown', e => {

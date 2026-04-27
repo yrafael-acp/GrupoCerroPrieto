@@ -57,9 +57,8 @@ async function actualizarReservaNube(prod) {
     const id  = prod === 'diesel' ? 'inputIsoDiesel' : 'inputIsoGasohol';
     const val = parseFloat(document.getElementById(id).value) || 0;
     try {
-        await fetch(WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify(withEmpresa({ action: 'updateReservas', producto: prod, cantidad: val }))
-        });
-    } catch(e) { console.warn('Error sincronizando reserva:', e); }
+        await apiPost({ action: 'updateReservas', producto: prod, cantidad: val });
+    } catch(e) {
+        if (!handleAuthError(e)) console.warn('Error sincronizando reserva:', e);
+    }
 }

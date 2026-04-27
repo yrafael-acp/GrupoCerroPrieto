@@ -5,8 +5,9 @@ async function consultarFecha() {
   setLoader(true);
   mostrarMsg("msgGuardar","","");
   try {
-    const empresa = sessionStorage.getItem('empresaGrifo') || 'ACPAGRO';
-    const url = SCRIPT_URL + '?action=getGrifoControl&fecha=' + fecha + '&empresa=' + encodeURIComponent(empresa);
+    const empresa = sessionStorage.getItem('empresaGrifo') || 'ACP';
+    const token = sessionStorage.getItem('tokenGrifo') || '';
+    const url = SCRIPT_URL + '?action=getGrifoControl&fecha=' + fecha + '&empresa=' + encodeURIComponent(empresa) + '&token=' + encodeURIComponent(token);
     const resp = await fetch(url);
     const data = await resp.json();
     if (data.status === "OK" && data.registro) {
@@ -37,7 +38,7 @@ async function guardarRegistro() {
   if (!fecha) { alert("Selecciona una fecha antes de guardar."); return; }
 
   const payload = {
-    empresa: sessionStorage.getItem('empresaGrifo') || 'ACPAGRO',
+    empresa: sessionStorage.getItem('empresaGrifo') || 'ACP',
     user: sessionStorage.getItem('sessionGrifo') || 'S/U',
     action: "saveGrifoControl",
     fecha,
@@ -64,7 +65,8 @@ async function guardarRegistro() {
   try {
     const resp = await fetch(SCRIPT_URL, {
       method: "POST",
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ ...payload, token: sessionStorage.getItem('tokenGrifo') || '' })
     });
     const data = await resp.json();
     if (data.status === "OK") {
