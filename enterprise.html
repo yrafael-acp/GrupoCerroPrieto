@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enterprise Center · Grupo Cerro Prieto</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div id="mainContent" style="display:block;max-width:1520px;margin:0 auto;padding:20px;">
+  <header class="app-header">
+    <div class="app-header-brand">
+      <img src="logo.png" alt="ACP">
+      <div>
+        <h1>Enterprise Center — <span id="displayUser"></span></h1>
+        <div class="sync-bar"><span class="sync-dot"></span> Panel v6 · <span id="entGenerated">—</span></div>
+      </div>
+    </div>
+    <div class="app-header-actions">
+      <select id="entEmpresa" class="btn btn-ghost btn-sm" style="min-width:140px"></select>
+      <button class="btn btn-primary btn-sm" onclick="refreshEnterpriseV6()">Actualizar</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportExecutiveXlsxV6()">Exportar XLSX</button>
+      <button class="btn btn-green btn-sm" onclick="generateExecutivePdfV6()">Generar PDF</button>
+      <a href="executive.html" class="btn btn-ghost btn-sm">Ejecutivo</a>
+      <a href="admin.html" class="btn btn-ghost btn-sm">Admin</a>
+      <button onclick="logout()" class="btn btn-danger btn-sm">Salir</button>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <div class="card">
+      <h3 class="card-title"><span class="icon">🏢</span> Resumen Enterprise</h3>
+      <div id="enterpriseSummary" class="metric-grid"></div>
+    </div>
+
+    <div class="admin-layout">
+      <div class="admin-stack">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <h3 class="card-title" style="margin:0"><span class="icon">👥</span> Usuarios y Permisos</h3>
+            <div class="admin-actions"><button class="btn btn-primary btn-sm" onclick="openUserModalV6()">Nuevo usuario</button></div>
+          </div>
+          <div id="usersTableWrap" style="margin-top:12px"></div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <h3 class="card-title" style="margin:0"><span class="icon">🔐</span> Sesiones</h3>
+            <div class="admin-actions"><button class="btn btn-ghost btn-sm" onclick="loadSessionsV6()">Actualizar</button></div>
+          </div>
+          <div id="sessionsTableWrap" style="margin-top:12px"></div>
+        </div>
+      </div>
+      <div class="admin-stack">
+        <div class="card">
+          <h3 class="card-title"><span class="icon">📝</span> Trazabilidad de Cambios</h3>
+          <div id="changesTableWrap"></div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <h3 class="card-title" style="margin:0"><span class="icon">⏰</span> Alertas Automáticas</h3>
+            <button class="btn btn-danger btn-sm" onclick="disableAutomaticAlertsV6()">Desactivar</button>
+          </div>
+          <div class="admin-filter-row" style="margin-top:12px;grid-template-columns:1fr 120px 180px auto;">
+            <input id="alertRecipients" placeholder="Destinatarios separados por coma">
+            <input id="alertHour" type="number" min="0" max="23" placeholder="Hora">
+            <span class="code-pill">Una vez al día</span>
+            <button class="btn btn-primary btn-sm" onclick="scheduleAutomaticAlertsV6()">Programar</button>
+          </div>
+          <div id="alertScheduleInfo" class="integrity-list" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="userModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:999;align-items:center;justify-content:center;padding:20px;">
+  <div class="card" style="width:min(680px,100%);max-height:90vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <h3 class="card-title" style="margin:0"><span class="icon">👤</span> Usuario</h3>
+      <button class="btn btn-ghost btn-sm" onclick="closeUserModalV6()">Cerrar</button>
+    </div>
+    <div class="admin-filter-row" style="margin-top:12px;grid-template-columns:1fr 1fr;">
+      <input id="uUsuario" placeholder="Usuario">
+      <input id="uClave" placeholder="Clave (opcional al editar)">
+      <select id="uRol"><option>READ</option><option>ADMIN</option><option>SUPERADMIN</option></select>
+      <select id="uEmpresa"><option>ACP</option><option>QALI</option></select>
+      <select id="uEstado"><option>ACTIVO</option><option>INACTIVO</option></select>
+      <select id="uCambio"><option>NO</option><option>SI</option></select>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px;gap:8px;">
+      <button class="btn btn-ghost btn-sm" onclick="closeUserModalV6()">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="saveUserAdminV6()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/v6.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Ejecutivo · Grupo Cerro Prieto</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div id="mainContent" style="display:block;max-width:1480px;margin:0 auto;padding:20px;">
+  <header class="app-header">
+    <div class="app-header-brand">
+      <img src="logo.png" alt="ACP">
+      <div>
+        <h1>Panel Ejecutivo — <span id="displayUser"></span></h1>
+        <div class="sync-bar"><span class="sync-dot"></span> Panel v5 · <span id="execGenerated">—</span></div>
+      </div>
+    </div>
+    <div class="app-header-actions">
+      <select id="empresaVista" class="btn btn-ghost btn-sm" style="min-width:150px"></select>
+      <button class="btn btn-primary btn-sm" onclick="refreshExecutiveV5()">Actualizar</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportExecutiveCsvV5()">Exportar CSV</button>
+      <button class="btn btn-green btn-sm" onclick="generateExecutivePdfV6()">Generar PDF</button><button class="btn btn-ghost btn-sm" onclick="exportExecutiveXlsxV6()">Exportar XLSX</button>
+      <button class="btn btn-danger btn-sm" onclick="sendExecutiveAlertV5()">Enviar resumen</button>
+      <a href="enterprise.html" class="btn btn-ghost btn-sm">Enterprise</a><a href="admin.html" class="btn btn-ghost btn-sm">Admin</a>
+      <a href="index.html" class="btn btn-ghost btn-sm">Inicio</a>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <div class="card">
+      <h3 class="card-title"><span class="icon">📌</span> KPIs Ejecutivos</h3>
+      <div id="execKpis" class="metric-grid"></div>
+    </div>
+
+    <div class="admin-layout">
+      <div class="admin-stack">
+        <div class="card">
+          <h3 class="card-title"><span class="icon">📈</span> Consumo últimos 12 meses</h3>
+          <div class="chart-wrap" style="height:340px"><canvas id="execMonthlyChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3 class="card-title"><span class="icon">📊</span> Consumo últimos 30 días</h3>
+          <div class="chart-wrap" style="height:340px"><canvas id="execDailyChart"></canvas></div>
+        </div>
+      </div>
+      <div class="admin-stack">
+        <div class="card">
+          <h3 class="card-title"><span class="icon">⚖️</span> Comparativo ACP vs QALI</h3>
+          <div id="execComparative"></div>
+        </div>
+        <div class="card">
+          <h3 class="card-title"><span class="icon">🚨</span> Alertas operativas</h3>
+          <div id="execAlerts" class="integrity-list"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/v5.js"></script>
+<script src="js/v6.js"></script>
+</body>
+</html>
