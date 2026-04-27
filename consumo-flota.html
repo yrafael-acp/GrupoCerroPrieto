@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACP - CONTROL DE FLOTA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/consumo-flota.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     HEADER STICKY
+════════════════════════════════════════════════ -->
+<header class="site-header">
+    <div class="header-inner">
+
+        <!-- BRAND -->
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="fas fa-truck-moving"></i>
+            </div>
+            <div class="brand-text">
+                <span class="brand-title">FLOTA NUBE</span>
+                <span class="brand-sub">Agrícola Cerro Prieto</span>
+            </div>
+        </div>
+
+        <!-- SEMANA SELECTOR -->
+        <div class="week-selector-box">
+            <div class="week-field">
+                <label class="week-label">AÑO</label>
+                <select id="selectorAnio" onchange="cambiarAnio()" class="week-select-year"></select>
+            </div>
+            <div class="week-divider"></div>
+            <div class="week-field">
+                <label class="week-label">SEMANA DE GESTIÓN</label>
+                <div class="week-row">
+                    <select id="selectorSemanas" onchange="gestionarCambioSemana()" class="week-select-main"></select>
+                    <span id="estadoSemana" class="week-status"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCIONES -->
+        <nav class="header-actions">
+            <button id="btnCerrarAdmin" onclick="irAPaginaPrincipal()" class="btn-action btn-home" title="Volver al Dashboard">
+                <i class="fas fa-home"></i>
+            </button>
+            <a id="btnCalcFlota" href="Saldo_comb.html" class="btn-action btn-calc">
+                <i class="fas fa-calculator"></i><span>VARILLA</span>
+            </a>
+            <button id="btnRegistrar" onclick="abrirModalRegistro()" class="btn-action btn-register">
+                <i class="fas fa-gas-pump"></i><span>REGISTRAR</span>
+            </button>
+            <button id="btnConsulta" onclick="abrirModalConsulta()" class="btn-action btn-consult">
+                <i class="fas fa-search-dollar"></i><span>ÓRDENES</span>
+            </button>
+            <button id="btnSincronizar" onclick="sincronizarDesdeNube()" class="btn-action btn-sync">
+                <i class="fas fa-sync-alt"></i><span>SYNC</span>
+            </button>
+            <button id="btnRango" onclick="abrirModalRango()" class="btn-action btn-range">
+                <i class="fas fa-calendar-alt"></i><span>RANGO</span>
+            </button>
+            <button id="btnConfig" onclick="abrirModalConfig()" class="btn-action btn-config">
+                <i class="fas fa-cog"></i><span>CONFIG</span>
+            </button>
+            <button id="btnLimpiar" onclick="limpiarValesManuales()" class="btn-action btn-clean" title="Limpiar Vales">
+                <i class="fas fa-broom"></i><span>LIMPIAR</span>
+            </button>
+            <button id="btnSalirFlota" onclick="logout()" class="btn-action btn-exit">
+                <i class="fas fa-power-off"></i><span>SALIR</span>
+            </button>
+        </nav>
+
+    </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════════ -->
+<main class="main-content">
+
+    <!-- PANEL SAP UPLOADER (admin only) -->
+    <div class="admin-only sap-upload-panel">
+        <div class="sap-upload-left">
+            <div class="sap-icon-wrap"><i class="fas fa-file-excel"></i></div>
+            <div>
+                <h3 class="sap-title">Sincronizador SAP</h3>
+                <p id="statusCargaSAP" class="sap-status">Listo para recibir data</p>
+            </div>
+        </div>
+        <label class="btn-sap-upload">
+            <i class="fas fa-upload"></i> SELECCIONAR EXCEL SAP
+            <input type="file" id="inputArchivoSAP" accept=".xlsx,.xls" style="display:none;" onchange="procesarArchivoSAPFlota(this)">
+        </label>
+    </div>
+
+    <!-- KPI CARDS (solo ADMIN vía FlotaUI.aplicarRestriccionesRol) -->
+    <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi-card kpi-blue">
+            <div class="kpi-icon"><i class="fas fa-tachometer-alt"></i></div>
+            <div class="kpi-body">
+                <span class="kpi-label">GLN ASIGNADO</span>
+                <span id="resumenAsignado" class="kpi-value">0.00</span>
+            </div>
+            <div class="kpi-bar"></div>
+        </div>
+        <div class="kpi-card kpi-orange">
+            <div class="kpi-icon"><i class="fas fa-fire"></i></div>
+            <div class="kpi-body">
+                <span class="kpi-label">GLN CONSUMIDO</span>
+                <span id="resumenConsumido" class="kpi-value">0.00</span>
+            </div>
+            <div class="kpi-bar"></div>
+        </div>
+        <div class="kpi-card kpi-green">
+            <div class="kpi-icon"><i class="fas fa-battery-three-quarters"></i></div>
+            <div class="kpi-body">
+                <span class="kpi-label">SALDO DISP.</span>
+                <span id="resumenSaldo" class="kpi-value">0.00</span>
+            </div>
+            <div class="kpi-bar"></div>
+        </div>
+        <div class="kpi-card kpi-purple">
+            <div class="kpi-icon"><i class="fas fa-chart-pie"></i></div>
+            <div class="kpi-body">
+                <span class="kpi-label">% EFICIENCIA</span>
+                <span id="resumenEficiencia" class="kpi-value">0%</span>
+            </div>
+            <div class="kpi-efficiency-ring">
+                <svg viewBox="0 0 36 36" class="efficiency-svg">
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="3"/>
+                    <circle id="efficiencyArc" cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="3" stroke-dasharray="0 100" stroke-linecap="round" transform="rotate(-90 18 18)"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- RADAR DE INACTIVOS -->
+    <div class="radar-panel">
+        <div class="radar-header">
+            <div>
+                <h3 class="radar-title">
+                    <span class="radar-dot"></span>
+                    Radar de Unidades Sin Consumo
+                </h3>
+                <p id="rangoAuditoria" class="radar-subtitle">Selecciona un periodo para escanear el historial</p>
+            </div>
+            <div class="radar-toggle">
+                <button id="btnAuditMes" onclick="auditarInactivos('mes')" class="radar-btn radar-btn-active">ESTE MES</button>
+                <button id="btnAuditAnio" onclick="auditarInactivos('anio')" class="radar-btn">TODO EL AÑO</button>
+            </div>
+        </div>
+        <div id="listaInactivos" class="radar-grid">
+            <div class="radar-empty">
+                <i class="fas fa-satellite-dish"></i>
+                <p>Haz clic en <b>ESTE MES</b> o <b>TODO EL AÑO</b> para auditar consumos de SAP.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA PRINCIPAL -->
+    <div class="table-panel">
+        <!-- Toolbar -->
+        <div class="table-toolbar">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="buscador" onkeyup="filtrarTabla()" placeholder="Buscar placa, responsable o área..." class="search-input">
+            </div>
+            <div id="indicadorCarga" class="sync-indicator hidden">
+                <span class="sync-dot"></span>
+                <span id="syncLabel">SINCRONIZANDO...</span>
+            </div>
+            <div class="table-meta">
+                <span id="contadorFilas" class="meta-badge">—</span>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-scroll">
+            <table class="fleet-table" id="tablaFlota">
+                <thead>
+                    <tr>
+                        <th class="col-placa">PLACA</th>
+                        <th class="col-resp">RESPONSABLE / ÁREA</th>
+                        <th class="col-day">L</th>
+                        <th class="col-day">M</th>
+                        <th class="col-day">Mi</th>
+                        <th class="col-day">J</th>
+                        <th class="col-day">V</th>
+                        <th class="col-day">S</th>
+                        <th class="col-day">D</th>
+                        <th class="col-asig">ASIG.</th>
+                        <th class="col-cons">CONS.</th>
+                        <th class="col-saldo">SALDO</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTabla"></tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL: REGISTRAR DESPACHO
+════════════════════════════════════════════════ -->
+<div id="modalRegistro" class="modal-overlay">
+    <div class="modal-box modal-sm">
+        <div class="modal-head modal-head-orange">
+            <h2><i class="fas fa-gas-pump mr-2"></i>Registrar Despacho</h2>
+            <button onclick="cerrarModalRegistro()" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Placa</label>
+                <input type="text" id="regPlaca" class="form-input uppercase font-bold" placeholder="ABC-123">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Fecha</label>
+                <input type="date" id="regFecha" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tipo de Combustible</label>
+                <select id="regTipo" class="form-input">
+                    <option value="GASOHOL 90">GASOHOL 90</option>
+                    <option value="DIESEL B5 S50">DIESEL B5 S50</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Cantidad (GLN)</label>
+                <input type="number" id="regCant" class="form-input" placeholder="0.00" step="0.01">
+            </div>
+            <button onclick="guardarRegistroManual()" class="btn-modal-primary btn-orange-full">
+                <i class="fas fa-cloud-upload-alt mr-2"></i>ENVIAR A NUBE
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL: CONSULTA ÓRDENES
+════════════════════════════════════════════════ -->
+<div id="modalConsulta" class="modal-overlay">
+    <div class="modal-box modal-xl">
+        <div class="modal-head modal-head-indigo">
+            <h2><i class="fas fa-file-invoice-dollar mr-2"></i>Reporte Detallado de Órdenes</h2>
+            <button onclick="cerrarModalConsulta()" class="modal-close">&times;</button>
+        </div>
+
+        <div class="consulta-filters">
+            <div class="filter-row">
+                <div class="filter-group flex-2">
+                    <label class="form-label">Números de Orden (separados por coma)</label>
+                    <input type="text" id="inputOrdenes" placeholder="Ej: 8000056, 8000057" class="form-input">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Fecha Desde</label>
+                    <input type="date" id="fechaDesde" class="form-input">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Fecha Hasta</label>
+                    <input type="date" id="fechaHasta" class="form-input">
+                </div>
+            </div>
+            <div class="consulta-actions">
+                <div id="resumenConsultaOrden" class="consulta-totals hidden">
+                    <div class="total-chip total-chip-blue">
+                        <span class="chip-label">Consumo Total</span>
+                        <span class="chip-value" id="totalGlnOrden">0.00</span>
+                    </div>
+                    <div class="total-chip total-chip-green">
+                        <span class="chip-label">Inversión SAP</span>
+                        <span class="chip-value" id="totalSolesOrden">0.00</span>
+                    </div>
+                    <button onclick="exportarConsultaExcel()" class="btn-export">
+                        <i class="fas fa-file-excel mr-1"></i>EXPORTAR
+                    </button>
+                </div>
+                <button onclick="ejecutarConsultaOrden()" class="btn-modal-primary btn-indigo">
+                    <i class="fas fa-search mr-2"></i>CONSULTAR SAP
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-table-area">
+            <div id="cargaConsulta" class="loading-overlay hidden">
+                <div class="spinner-lg"></div>
+                <p>Extrayendo datos de la nube...</p>
+            </div>
+
+            <div id="tablaConsultaContainer" class="hidden">
+                <table class="order-table" id="tablaResultadoOrden">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Material</th>
+                            <th>Vehículo / Placa</th>
+                            <th>Documento</th>
+                            <th class="text-center">Cantidad</th>
+                            <th class="text-right">Importe</th>
+                            <th class="text-center">N° Orden</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div id="estadoConsulta" class="consulta-empty">
+                <i class="fas fa-filter"></i>
+                <p>Ingresa los números de orden para generar el reporte...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL: EDITAR DOTACIÓN
+════════════════════════════════════════════════ -->
+<div id="modalEditarFlota" class="modal-overlay">
+    <div class="modal-box modal-sm">
+        <div class="modal-head modal-head-green">
+            <h2><i class="fas fa-sliders-h mr-2"></i>Ajustar Dotación Semanal</h2>
+            <button onclick="cerrarModalEditarFlota()" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Vehículo</label>
+                <input type="text" id="editPlaca" class="form-input font-bold bg-gray-50" readonly>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nueva Dotación (GLN)</label>
+                <input type="number" id="editDotacion" class="form-input" placeholder="0.00" step="0.01">
+            </div>
+            <button onclick="guardarExcepcionSemanal()" class="btn-modal-primary btn-blue-full">
+                <i class="fas fa-calendar-check mr-2"></i>APLICAR SOLO ESTA SEMANA
+            </button>
+            <p class="form-hint">* Solo afecta a la semana seleccionada.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL: CONFIGURACIÓN MAESTRO
+════════════════════════════════════════════════ -->
+<div id="modalConfig" class="modal-overlay">
+    <div class="modal-box modal-md">
+        <div class="modal-head modal-head-dark">
+            <h2><i class="fas fa-database mr-2"></i>Configuración de Flota — Maestro</h2>
+            <button onclick="cerrarModalConfig()" class="modal-close">&times;</button>
+        </div>
+
+        <div class="config-tabs">
+            <button id="btnTabLista" onclick="cambiarTabConfig('lista')" class="config-tab config-tab-active">LISTA / BAJA</button>
+            <button id="btnTabAlta" onclick="cambiarTabConfig('alta')" class="config-tab">DAR DE ALTA</button>
+        </div>
+
+        <div class="modal-body">
+            <div id="panelListaConfig">
+                <div id="listaConfigFlota" class="config-list"></div>
+            </div>
+
+            <div id="panelAltaConfig" class="hidden space-y-4">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label">Placa</label>
+                        <input type="text" id="newPlaca" class="form-input uppercase font-bold" placeholder="ABC-123">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dotación (GLN)</label>
+                        <input type="number" id="newDot" class="form-input" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="form-group form-group-highlight">
+                    <label class="form-label-blue"><i class="fas fa-link mr-1"></i>ID Vínculo (Saldo Compartido)</label>
+                    <input type="text" id="newIdVinculo" class="form-input uppercase" placeholder="Ej: LUIS MACHER">
+                    <p class="form-hint-blue">* Deja vacío para asignar un nuevo correlativo automático.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Responsable</label>
+                    <input type="text" id="newResp" class="form-input uppercase" placeholder="NOMBRE DEL CONDUCTOR">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Área / Fundo</label>
+                    <input type="text" id="newArea" class="form-input uppercase" placeholder="EJ: CERRO LA PATA">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha de Alta</label>
+                    <input type="date" id="newFechaAlta" class="form-input">
+                </div>
+                <button onclick="registrarAltaMaestro()" class="btn-modal-primary btn-green-full">
+                    <i class="fas fa-plus-circle mr-2"></i>GUARDAR EN MAESTRO
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL: RANGO SAP
+════════════════════════════════════════════════ -->
+<div id="modalRango" class="modal-overlay">
+    <div class="modal-box modal-sm">
+        <div class="modal-head modal-head-blue">
+            <h2><i class="fas fa-calendar-alt mr-2"></i>Actualizar Rango SAP</h2>
+            <button onclick="cerrarModalRango()" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Fecha Inicio</label>
+                <input type="date" id="rangoDesde" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Fecha Fin</label>
+                <input type="date" id="rangoHasta" class="form-input">
+            </div>
+            <button onclick="ejecutarSincronizacionRango()" class="btn-modal-primary btn-blue-full">
+                <i class="fas fa-sync-alt mr-2"></i>PROCESAR AHORA
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TOAST NOTIFICATIONS
+════════════════════════════════════════════════ -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- ═══════════════════════════════════════════════
+     SCRIPTS MODULARES
+════════════════════════════════════════════════ -->
+<script src="js/consumo-flota/flota.config.js"></script>
+<script src="js/consumo-flota/flota.api.js"></script>
+<script src="js/consumo-flota/flota.utils.js"></script>
+<script src="js/consumo-flota/flota.ui.js"></script>
+<script src="js/consumo-flota/flota.tabla.js"></script>
+<script src="js/consumo-flota/flota.modales.js"></script>
+<script src="js/consumo-flota/flota.init.js"></script>
+
+</body>
+</html>

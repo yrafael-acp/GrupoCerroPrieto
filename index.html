@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistema Corporativo Grifo ACP</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<div id="loginOverlay">
+    <div class="login-card">
+        <img src="logo.png" alt="Logo ACP">
+        <h2>Grifo ACP — Acceso</h2>
+        <p class="sub">Ingresa tus credenciales para continuar</p>
+
+        <div id="loginForm">
+            <div class="field-group">
+                <label class="field-label">Usuario</label>
+                <input type="text" id="userInput" placeholder="Ej: ADMIN" autocomplete="username" autocapitalize="characters">
+            </div>
+            <div class="field-group">
+                <label class="field-label">Contraseña</label>
+                <input type="password" id="passInput" placeholder="••••••••" autocomplete="current-password"
+                       onkeydown="if(event.key==='Enter') handleLogin()">
+            </div>
+            <button id="btnLogin" class="btn btn-primary btn-full" onclick="handleLogin()" style="margin-top:6px">
+                Ingresar →
+            </button>
+            <p id="loginError" style="color:var(--danger);font-size:.8rem;margin-top:10px;display:none;"></p>
+        </div>
+
+        <div id="changePassForm" style="display:none;">
+            <div class="force-change-msg">⚠️ Cambio de contraseña obligatorio. Debe incluir al menos <strong>1 mayúscula</strong> y <strong>1 número</strong>.</div>
+            <div class="field-group">
+                <label class="field-label">Nueva Contraseña</label>
+                <input type="password" id="newPassInput" placeholder="Nueva clave">
+            </div>
+            <div class="field-group">
+                <label class="field-label">Confirmar Contraseña</label>
+                <input type="password" id="confirmPassInput" placeholder="Repite la clave">
+            </div>
+            <button class="btn btn-success btn-full" onclick="saveNewPassword()" style="margin-top:6px">
+                Actualizar y Entrar
+            </button>
+            <p id="passError" style="color:var(--danger);font-size:.8rem;margin-top:10px;display:none;"></p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MAIN ==================== -->
+<div id="mainContent">
+
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="app-header-brand">
+            <img src="logo.png" alt="ACP">
+            <div>
+                <h1>Gestión Corporativa — <span id="displayUser"></span></h1>
+                <div class="sync-bar">
+                    <span class="sync-dot"></span>
+                    Sistema online · Última sync: <span id="lastUpdate">—</span>
+                </div>
+            </div>
+        </div>
+        <div class="app-header-actions">
+            <a href="grifo_control.html" class="btn btn-primary btn-sm only-admin-grifo" style="display:none;">⛽ Grifo Control</a>
+            <a href="Saldo_comb.html" class="btn btn-ghost btn-sm">📏 Varilla</a>
+            <a href="consumo-flota.html" class="btn btn-green btn-sm">🚛 Flota</a>
+            <button onclick="logout()" class="btn btn-danger btn-sm">Salir</button>
+        </div>
+    </header>
+
+    <!-- GRID DASHBOARD -->
+    <main class="dashboard">
+
+        <!-- 1. REGISTRO DE MOVIMIENTO -->
+        <div class="card admin-only" id="registroCard">
+            <h3 class="card-title"><span class="icon">⛽</span> Registro de Movimiento</h3>
+
+            <div class="field-group">
+                <label class="field-label">Fecha (dejar vacío = hoy)</label>
+                <input type="date" id="fechaMov">
+            </div>
+            <div class="field-group">
+                <label class="field-label">Tipo de Operación</label>
+                <select id="tipoMov" onchange="toggleCisterna()">
+                    <option value="salida">⬇ Salida — Consumo diario</option>
+                    <option value="ingreso">⬆ Ingreso — Cisterna</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Producto</label>
+                <select id="prod">
+                    <option value="diesel">🔵 Diesel (Cap: 5 000 gl)</option>
+                    <option value="gasohol">🟢 Gasohol (Cap: 1 000 gl)</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Cantidad (gl)</label>
+                <input type="number" id="cant" step="0.01" placeholder="0.00" min="0">
+            </div>
+            <div id="extraData" style="display:none;" class="field-group">
+                <label class="field-label">Referencia (Placa / Chofer)</label>
+                <input type="text" id="referencia" placeholder="Ej: ACP-123">
+            </div>
+            <button class="btn btn-primary btn-full" id="btnRegistrar" onclick="procesarMovimiento()">
+                Guardar Registro
+            </button>
+
+            <!-- SIMULADOR SEMANAL -->
+            <div class="sim-wrap">
+                <div class="sim-header">
+                    <span class="sim-title">📊 Proyectado Semanal de Compras</span>
+                    <button onclick="limpiarSimulacion()" class="btn btn-ghost btn-sm">↺ Resetear</button>
+                </div>
+
+                <div class="sim-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="border-right:2px solid #334155;">Día</th>
+                                <th colspan="3" style="text-align:center; background:#1e3a5f; border-right:2px solid #334155;">⛽ Diesel</th>
+                                <th colspan="3" style="text-align:center; background:#064e3b;">🟢 Gasohol</th>
+                            </tr>
+                            <tr style="font-size:.62rem;">
+                                <th style="background:#eff6ff; color:var(--diesel);">Cons</th>
+                                <th style="background:#eff6ff; color:var(--diesel);">Ing</th>
+                                <th style="background:#eff6ff; color:var(--diesel); border-right:2px solid #334155;">Saldo</th>
+                                <th style="background:#ecfdf5; color:var(--gasohol);">Cons</th>
+                                <th style="background:#ecfdf5; color:var(--gasohol);">Ing</th>
+                                <th style="background:#ecfdf5; color:var(--gasohol);">Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodySimuladoDual"></tbody>
+                        <tfoot>
+                            <tr>
+                                <td style="border-right:2px solid var(--border);">TOTAL PEDIDO</td>
+                                <td colspan="2" id="totalIngresoD" style="text-align:center; color:var(--diesel);">0.00</td>
+                                <td style="border-right:2px solid var(--border); color:var(--text-muted); font-size:.7rem;">gl</td>
+                                <td colspan="2" id="totalIngresoG" style="text-align:center; color:var(--gasohol);">0.00</td>
+                                <td style="color:var(--text-muted); font-size:.7rem;">gl</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div style="text-align:right; margin-top:14px;">
+                    <button id="btnGuardarSim" onclick="guardarProyeccionSemanal()" class="btn btn-success">
+                        ✅ Confirmar y Sincronizar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. MONITOR Y ANÁLISIS -->
+        <div class="card" id="monitorCard">
+            <h3 class="card-title"><span class="icon">📡</span> Monitor de Stock</h3>
+
+            <div id="alertasContainer"></div>
+
+            <div class="monitor-grid">
+                <!-- DIESEL -->
+                <div class="stock-badge diesel">
+                    <div class="stock-label-sm">Diesel · Físico Total</div>
+                    <div class="stock-value" id="sDiesel">0.00</div>
+                    <div class="desglose-row">
+                        <span class="desglose-label">Tanque Central</span>
+                        <span class="desglose-val" id="tanqueDiesel">0.00 gl</span>
+                    </div>
+                    <div class="desglose-row">
+                        <span class="desglose-label">Isotanques</span>
+                        <input type="number" id="inputIsoDiesel" class="input-sim iso-input" value="0"
+                               onchange="actualizarReservaNube('diesel')" min="0">
+                    </div>
+                    <div id="isoDiesel" style="display:none; margin-top:8px;"></div>
+                </div>
+
+                <!-- GASOHOL -->
+                <div class="stock-badge gasohol">
+                    <div class="stock-label-sm">Gasohol · Físico Total</div>
+                    <div class="stock-value" id="sGasohol">0.00</div>
+                    <div class="desglose-row">
+                        <span class="desglose-label">Tanque Central</span>
+                        <span class="desglose-val" id="tanqueGasohol">0.00 gl</span>
+                    </div>
+                    <div class="desglose-row">
+                        <span class="desglose-label">Isotanques</span>
+                        <input type="number" id="inputIsoGasohol" class="input-sim iso-input" value="0"
+                               onchange="actualizarReservaNube('gasohol')" min="0">
+                    </div>
+                    <div id="isoGasohol" style="display:none; margin-top:8px;"></div>
+                </div>
+            </div>
+
+            <!-- CONSUMO ANUAL -->
+            <div class="annual-bar">
+                <span style="font-size:.82rem; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:.04em;">📅 Consumo Acumulado</span>
+                <select id="selectAnioFiscal" class="year-picker"
+                        onchange="document.getElementById('currentYearDisplay').innerText=this.value; calcularConsumoAnual(); procesarGrafico();">
+                    <option value="2026" selected>2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                </select>
+            </div>
+            <div class="annual-kpis">
+                <div class="kpi-box diesel-kpi">
+                    <span style="font-size:.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Diesel Total</span>
+                    <span class="kpi-value diesel" id="annualDiesel">0.00 gl</span>
+                </div>
+                <div class="kpi-box gasohol-kpi">
+                    <span style="font-size:.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Gasohol Total</span>
+                    <span class="kpi-value gasohol" id="annualGasohol">0.00 gl</span>
+                </div>
+            </div>
+            <span id="currentYearDisplay" style="display:none;">2026</span>
+
+            <!-- GRÁFICO -->
+            <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px;">
+                <div class="chart-toolbar">
+                    <span class="chart-title" id="tituloGrafico">Consumo vs Mes Anterior</span>
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <select id="filtroMesGrafico" onchange="procesarGrafico()"
+                                style="width:auto; padding:5px 8px; font-size:.78rem; margin:0;"></select>
+                        <button id="btnToggleGrafico" onclick="toggleGrafico()" class="btn btn-primary btn-sm">
+                            Ver Tendencia Anual
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-wrap"><canvas id="consumoChart"></canvas></div>
+            </div>
+
+            <!-- FILTROS / INVENTARIO -->
+            <div style="margin-top:16px;">
+                <span class="field-label" style="font-size:.75rem; display:block; margin-bottom:4px;">📦 Inventario de Filtros</span>
+                <div class="filtros-grid">
+                    <div class="filtro-box">
+                        <span class="f-label">Tipo CF60</span>
+                        <span class="f-val" id="f60">0</span>
+                        <button class="btn btn-success btn-full btn-sm" onclick="gestionarFiltros('compra','cf60')">+ Ingreso</button>
+                    </div>
+                    <div class="filtro-box">
+                        <span class="f-label">Tipo CF100</span>
+                        <span class="f-val" id="f100">0</span>
+                        <button class="btn btn-success btn-full btn-sm" onclick="gestionarFiltros('compra','cf100')">+ Ingreso</button>
+                    </div>
+                </div>
+                <div id="alertaStockFiltros" style="margin-top:8px; font-size:.75rem; font-weight:700; text-align:center;"></div>
+            </div>
+        </div>
+
+        <!-- 3. PLAN TRIMESTRAL -->
+        <div class="card full-width">
+            <h3 class="card-title"><span class="icon">🔧</span> Plan Trimestral de Mantenimiento
+                <span style="font-size:.72rem; font-weight:400; color:var(--text-muted);">(alerta preventiva a los 85 días)</span>
+            </h3>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Equipo</th>
+                            <th>Filtro</th>
+                            <th>Último Mant.</th>
+                            <th>Días Transcurridos</th>
+                            <th>Estado</th>
+                            <th id="thAccion" style="display:none;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mantoBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. HISTORIAL -->
+        <div class="card full-width">
+            <h3 class="card-title"><span class="icon">📋</span> Historial de Movimientos</h3>
+            <div class="filter-bar">
+                <div class="field-group">
+                    <label class="field-label">Desde</label>
+                    <input type="date" id="filtroDesde">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Hasta</label>
+                    <input type="date" id="filtroHasta">
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="aplicarFiltros()" style="align-self:flex-end">Filtrar</button>
+                <button class="btn btn-ghost btn-sm" onclick="limpiarFiltros()" style="align-self:flex-end">Limpiar</button>
+                <button class="btn btn-excel btn-sm" onclick="exportarExcel()" style="align-self:flex-end">📊 Exportar</button>
+            </div>
+            <div class="tbl-wrap" id="historialWrap">
+                <table id="tablaHistorialWeb">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Operación</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Referencia</th>
+                            <th>Saldo Final</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historialBody">
+                        <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Cargando datos…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ==================== MODAL CALCULADORA VARILLA ==================== -->
+<button id="fabVarilla" onclick="document.getElementById('modalVarilla').classList.add('open')">📏</button>
+
+<div id="modalVarilla" class="modal-backdrop" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">📏 Calculadora de Varilla</span>
+            <button class="modal-close" onclick="document.getElementById('modalVarilla').classList.remove('open')">✕</button>
+        </div>
+        <div class="field-group">
+            <label class="field-label">Stock en Sistema (gl)</label>
+            <input type="number" id="simStockIni" placeholder="Ej: 4500" oninput="ejecutarSimulacionVarilla()">
+        </div>
+        <div class="field-group">
+            <label class="field-label">Lectura de Varilla (gl)</label>
+            <input type="number" id="simVarilla" placeholder="Ej: 4350" oninput="ejecutarSimulacionVarilla()">
+        </div>
+        <div class="varilla-result">
+            <small>Consumo Calculado</small>
+            <span class="val" id="simResultadoVarilla">0.00 gl</span>
+        </div>
+    </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/maintenance.js"></script>
+<script src="js/chart.js"></script>
+<script src="js/history.js"></script>
+<script src="js/movements.js"></script>
+<script src="js/simulator.js"></script>
+<script src="js/varilla.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/init.js"></script>
+</body>
+</html>

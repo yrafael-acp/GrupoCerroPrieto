@@ -1,0 +1,99 @@
+/* ============================================================
+   ACP Grifo — Design tokens (cargar antes que los módulos)
+   ============================================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+:root {
+    color-scheme: light;
+
+    /* Neutrals */
+    --ink: #0c1222;
+    --ink-soft: #1e293b;
+    --text: #334155;
+    --text-muted: #64748b;
+    --text-faint: #94a3b8;
+
+    --surface: #ffffff;
+    --surface-raised: #f8fafc;
+    --surface-muted: #f1f5f9;
+    --border: color-mix(in srgb, var(--ink) 8%, transparent);
+    --border-strong: color-mix(in srgb, var(--ink) 14%, transparent);
+
+    /* Brand */
+    --primary: #0f172a;
+    --primary-soft: #162544;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-muted: color-mix(in srgb, var(--accent) 14%, transparent);
+
+    --diesel: #1d4ed8;
+    --diesel-soft: #eff6ff;
+    --diesel-ring: #bfdbfe;
+
+    --gasohol: #059669;
+    --gasohol-soft: #ecfdf5;
+    --gasohol-ring: #a7f3d0;
+
+    --acp-green: #047857;
+    --acp-green-bright: #059669;
+
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --warning: #d97706;
+    --warning-soft: #fffbeb;
+    --success: #059669;
+    --success-soft: #ecfdf5;
+
+    /* Shape & depth */
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-lg: 20px;
+    --shadow-xs: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent);
+    --shadow-sm: 0 2px 8px color-mix(in srgb, var(--ink) 6%, transparent);
+    --shadow-md: 0 8px 30px color-mix(in srgb, var(--ink) 8%, transparent);
+    --elevation-lg: 0 24px 60px color-mix(in srgb, var(--ink) 12%, transparent);
+    --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+
+    /* Typography */
+    --font-sans: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", "DM Mono", ui-monospace, monospace;
+
+    --text-xs: 0.6875rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.9375rem;
+    --text-lg: 1.0625rem;
+    --text-xl: 1.25rem;
+    --leading-tight: 1.2;
+    --leading-snug: 1.35;
+    --tracking-wide: 0.06em;
+
+    /* Aliases (compatibilidad con hojas existentes) */
+    --surface-2: var(--surface-muted);
+    --primary-lt: var(--primary-soft);
+    --diesel-lt: var(--diesel-soft);
+    --diesel-bd: var(--diesel-ring);
+    --gasohol-lt: var(--gasohol-soft);
+    --gasohol-bd: var(--gasohol-ring);
+    --danger-lt: var(--danger-soft);
+    --warning-lt: var(--warning-soft);
+    --success-lt: var(--success-soft);
+    --shadow: var(--shadow-sm);
+    --shadow-lg: var(--elevation-lg);
+
+    /* Responsive / táctil (consumido en media queries) */
+    --touch-target: 44px;
+    --page-inline: clamp(14px, 4vw, 28px);
+    --fab-clearance: 5.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

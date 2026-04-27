@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRIFO CONTROL — Saldos de Combustible</title>
+<link rel="icon" type="image/png" href="logo.png">
+<script>
+  (function () {
+    const user = sessionStorage.getItem('sessionGrifo');
+    const role = sessionStorage.getItem('rolGrifo');
+    if (!user || !role) {
+      window.location.replace('index.html');
+    }
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/grifo_control.css">
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">LOG_COMBUSTIBLE &nbsp;/&nbsp; <span>GRIFO CONTROL</span></div>
+  <div class="date-nav">
+    <div class="loader" id="loader"><div class="spinner"></div> cargando...</div>
+    <input type="date" id="fechaSelector" title="Seleccionar fecha">
+    <button class="btn btn-primary" onclick="consultarFecha()">Consultar</button>
+    <button class="btn btn-ghost" onclick="usarHoy()">Hoy</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="config-banner">
+  </div>
+
+  <div class="date-badge" id="labelFecha">Mostrando: —</div>
+
+  <div id="statusMsg" class="status-msg"></div>
+
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="card-header card-header-gasohol">
+        <div class="card-title card-title-gasohol">⬡ Gasolina (Gasohol)</div>
+        <div class="card-date-tag" id="tagFechaGas">—</div>
+      </div>
+      <div class="card-body">
+
+        <div class="section-label">Sistema</div>
+        <div class="fields-grid">
+          <div class="field-row">
+            <label class="field-label">Falta Ingresar (GLN)</label>
+            <input class="field-input" type="number" id="gas_falta" placeholder="0.00" step="0.01" oninput="recalcular()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">SAP (GLN)</label>
+            <input class="field-input" type="number" id="gas_sap" placeholder="0.00" step="0.01" oninput="recalcular()">
+          </div>
+          <div class="total-row">
+            <span class="total-label">Total Sistema</span>
+            <div class="total-value card-title-gasohol" id="gas_totalSis">0.00</div>
+          </div>
+        </div>
+
+        <div class="section-label">Físico</div>
+        <div class="fields-grid">
+          <div class="field-row">
+            <label class="field-label">Tanque Central (GLN)</label>
+            <input class="field-input" type="number" id="gas_tanque" placeholder="0.00" step="0.01" oninput="recalcular()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">Isotanque (GLN)</label>
+            <input class="field-input" type="number" id="gas_iso" placeholder="0.00" step="0.01" oninput="recalcular()">
+          </div>
+          <div class="total-row">
+            <span class="total-label">Total Físico</span>
+            <div class="total-value card-title-gasohol" id="gas_totalFis">0.00</div>
+          </div>
+        </div>
+
+        <div class="diferencia-box">
+          <div>
+            <div class="dif-label">Diferencia</div>
+            <div class="dif-formula">Físico − Sistema</div>
+          </div>
+          <div class="dif-value dif-zero" id="gas_dif">0.00</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="card-header card-header-diesel">
+        <div class="card-title card-title-diesel">⬡ Petróleo (Diesel)</div>
+        <div class="card-date-tag" id="tagFechaPet">—</div>
+      </div>
+      <div class="card-body">
+
+        <div class="section-label">Sistema</div>
+        <div class="fields-grid">
+          <div class="field-row">
+            <label class="field-label">Falta Ingresar (GLN)</label>
+            <input class="field-input" type="number" id="pet_falta" placeholder="0.00" step="0.01" oninput="recalcular()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">SAP (GLN)</label>
+            <input class="field-input" type="number" id="pet_sap" placeholder="0.00" step="0.01" oninput="recalcular()">
+          </div>
+          <div class="total-row">
+            <span class="total-label">Total Sistema</span>
+            <div class="total-value card-title-diesel" id="pet_totalSis">0.00</div>
+          </div>
+        </div>
+
+        <div class="section-label">Físico</div>
+        <div class="fields-grid">
+          <div class="field-row">
+            <label class="field-label">Tanque Central (GLN)</label>
+            <input class="field-input" type="number" id="pet_tanque" placeholder="0.00" step="0.01" oninput="recalcular()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">Isotanque (GLN)</label>
+            <input class="field-input" type="number" id="pet_iso" placeholder="0.00" step="0.01" oninput="recalcular()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">Hipotanque (GLN)</label>
+            <input class="field-input" type="number" id="pet_hipo" placeholder="0.00" step="0.01" oninput="recalcular()">
+          </div>
+          <div class="total-row">
+            <span class="total-label">Total Físico</span>
+            <div class="total-value card-title-diesel" id="pet_totalFis">0.00</div>
+          </div>
+        </div>
+
+        <div class="diferencia-box">
+          <div>
+            <div class="dif-label">Diferencia</div>
+            <div class="dif-formula">Físico − Sistema</div>
+          </div>
+          <div class="dif-value dif-zero" id="pet_dif">0.00</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="summary-panel">
+    <div class="summary-item">
+      <div class="summary-item-label">Dif. Gasohol</div>
+      <div class="summary-item-value" id="res_gas" style="color: var(--text-muted)">—</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-item-label">Dif. Diesel</div>
+      <div class="summary-item-value" id="res_pet" style="color: var(--text-muted)">—</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-item-label">Total Sistema Gas.</div>
+      <div class="summary-item-value" id="res_sisg" style="color: var(--gasohol)">—</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-item-label">Total Sistema Diese.</div>
+      <div class="summary-item-value" id="res_sisp" style="color: var(--diesel)">—</div>
+    </div>
+  </div>
+
+  <div class="actions-bar">
+    <span id="msgGuardar" class="status-msg"></span>
+    <button class="btn btn-ghost" onclick="limpiarFormulario()">Limpiar</button>
+    <button class="btn btn-save" onclick="guardarRegistro()">Guardar Registro</button>
+  </div>
+
+</div>
+
+<script src="js/grifo_control/config.js"></script>
+<script src="js/grifo_control/state.js"></script>
+<script src="js/grifo_control/utils.js"></script>
+<script src="js/grifo_control/ui.js"></script>
+<script src="js/grifo_control/calculations.js"></script>
+<script src="js/grifo_control/api.js"></script>
+<script src="js/grifo_control/init.js"></script>
+</body>
+</html>
