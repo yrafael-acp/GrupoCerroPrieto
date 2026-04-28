@@ -1,7 +1,7 @@
 /* ============================================================
    CONFIGURACIÓN GLOBAL V2
 ============================================================ */
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwfmWFdfyzFEftjS76Xd6Id14WsVuo4kbvHoPYWaXfBSDhbS6DwZgukt9YVabvTAlkGzA/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxkTus1dbIG10z-fMi3Lnr_S0cynkMbYl81aUqVdi_c0DaFl_qCMD7xSPMRLWaiXtOLrw/exec';
 
 const EMPRESAS = {
     ACP: 'ACP',
