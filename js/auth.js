@@ -14,16 +14,7 @@ async function handleLogin() {
     btn.disabled = true;
 
     try {
-        const resp = await fetch(`${WEB_APP_URL}?action=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
-        const raw = await resp.text();
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
-        let res;
-        try {
-            res = JSON.parse(raw);
-        } catch (_) {
-            throw new Error(raw || 'Respuesta inválida del servidor');
-        }
+        const res = await jsonpRequest(`${WEB_APP_URL}?action=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
 
         if (res.auth === 'OK') {
             applySessionData(res);
@@ -38,7 +29,7 @@ async function handleLogin() {
         }
     } catch (e) {
         const msg = (e && e.message ? e.message : 'Error de conexión. Intenta nuevamente.');
-        showLoginError(msg.includes('HTTP ') ? 'Error de conexión. Intenta nuevamente.' : msg);
+        showLoginError(msg || 'Error de conexión. Intenta nuevamente.');
     } finally {
         btn.textContent = 'Ingresar →';
         btn.disabled = false;

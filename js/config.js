@@ -74,10 +74,35 @@ function withEmpresa(payload = {}) {
     };
 }
 
+function jsonpRequest(url) {
+    return new Promise((resolve, reject) => {
+        const cbName = '__jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        const sep = url.includes('?') ? '&' : '?';
+        const script = document.createElement('script');
+        let done = false;
+        const cleanup = () => {
+            if (script.parentNode) script.parentNode.removeChild(script);
+            try { delete window[cbName]; } catch (_) { window[cbName] = undefined; }
+        };
+        window[cbName] = (data) => {
+            done = true;
+            cleanup();
+            resolve(data);
+        };
+        script.onerror = () => {
+            cleanup();
+            reject(new Error('No se pudo conectar con el servidor.'));
+        };
+        script.src = url + sep + 'callback=' + encodeURIComponent(cbName) + '&_ts=' + Date.now();
+        document.body.appendChild(script);
+        setTimeout(() => {
+            if (!done) { cleanup(); reject(new Error('Tiempo de espera agotado.')); }
+        }, 20000);
+    });
+}
+
 async function apiGet(action, extraParams = {}) {
-    const response = await fetch(buildApiUrl(action, extraParams));
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    const data = await response.json();
+    const data = await jsonpRequest(buildApiUrl(action, extraParams));
     if (data && data.status === 'ERROR') throw new Error(data.message || 'Error de servidor');
     return data;
 }
