@@ -12,14 +12,7 @@ function adminBadge(level){
 function adminFormatNum(n){ return Number(n || 0).toLocaleString('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}); }
 
 function ensureAdminSession(){
-  if (!getCurrentUser() || !getSessionToken() || isSessionExpired()) { window.location.href='index.html'; return false; }
-  if (!(getCurrentRole()===ROLES.ADMIN || getCurrentRole()===ROLES.SUPERADMIN)) { alert('No tienes permisos para acceder al panel administrativo.'); window.location.href='index.html'; return false; }
-  injectSessionStyles(); renderUserBadge();
-  const superBlock = document.querySelectorAll('.superadmin-only');
-  superBlock.forEach(el => el.style.display = isSuperAdmin() ? 'block' : 'none');
-  const roleEls = document.querySelectorAll('[data-role="superadmin-only"]');
-  roleEls.forEach(el => el.style.display = isSuperAdmin() ? '' : 'none');
-  return true;
+  return bootstrapProtectedView({ roles: [ROLES.ADMIN, ROLES.SUPERADMIN], forbiddenMessage: 'No tienes permisos para acceder al panel administrativo.' });
 }
 
 async function cargarAdminDashboard(){

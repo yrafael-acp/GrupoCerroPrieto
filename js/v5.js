@@ -6,10 +6,7 @@ let executiveCache = null;
 function execEscape(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
 function execNum(n){ return Number(n || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function ensureExecutiveSession(){
-  if (!getCurrentUser() || !getSessionToken() || isSessionExpired()) { window.location.href = 'index.html'; return false; }
-  if (!(getCurrentRole() === ROLES.ADMIN || getCurrentRole() === ROLES.SUPERADMIN)) { alert('No tienes permisos para acceder al panel ejecutivo.'); window.location.href = 'index.html'; return false; }
-  injectSessionStyles(); renderUserBadge();
-  return true;
+  return bootstrapProtectedView({ roles: [ROLES.ADMIN, ROLES.SUPERADMIN], forbiddenMessage: 'No tienes permisos para acceder al panel ejecutivo.' });
 }
 function getExecEmpresaVista(){ return document.getElementById('empresaVista')?.value || getCurrentEmpresa(); }
 function renderExecEmpresaOptions(){

@@ -5,10 +5,7 @@ let currentEditUserV6 = null;
 function v6esc(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
 function v6num(n){ return Number(n || 0).toLocaleString('es-PE'); }
 function ensureEnterpriseSessionV6(){
-  if (!getCurrentUser() || !getSessionToken() || isSessionExpired()) { window.location.href = 'index.html'; return false; }
-  if (!(getCurrentRole() === ROLES.ADMIN || getCurrentRole() === ROLES.SUPERADMIN)) { alert('No tienes permisos para acceder.'); window.location.href = 'index.html'; return false; }
-  injectSessionStyles(); renderUserBadge();
-  return true;
+  return bootstrapProtectedView({ roles: [ROLES.ADMIN, ROLES.SUPERADMIN], forbiddenMessage: 'No tienes permisos para acceder.' });
 }
 function enterpriseEmpresaOptionsV6(){
   const sel = document.getElementById('entEmpresa');
@@ -20,8 +17,8 @@ function enterpriseEmpresaOptionsV6(){
 async function refreshEnterpriseV6(){
   try {
     const empresaVista = document.getElementById('entEmpresa')?.value || getCurrentEmpresa();
-    const dashboard = await apiGet('getEnterpriseDashboardV6', { empresa: empresaVista === 'ALL' ? getCurrentEmpresa() : empresaVista });
-    const users = await apiGet('getUsersAdminV6', { empresa: empresaVista === 'ALL' ? getCurrentEmpresa() : empresaVista });
+    const dashboard = await apiGet('getEnterpriseDashboardV6', { empresaVista });
+    const users = await apiGet('getUsersAdminV6', { empresa: empresaVista === 'ALL' ? '' : empresaVista });
     const sessions = await apiGet('getSessionTraceV6', { empresa: empresaVista === 'ALL' ? '' : empresaVista });
     const changes = await apiGet('getChangeAuditV6', { empresa: empresaVista === 'ALL' ? '' : empresaVista });
     enterpriseCache = { dashboard, users, sessions, changes, empresaVista };
@@ -89,14 +86,14 @@ async function disableAutomaticAlertsV6(){
 async function exportExecutiveXlsxV6(){
   try {
     const empresaVista = document.getElementById('entEmpresa')?.value || getCurrentEmpresa();
-    const res = await apiGet('exportExecutiveXlsxV6', { empresaVista: empresaVista === 'ALL' ? getCurrentEmpresa() : empresaVista });
+    const res = await apiGet('exportExecutiveXlsxV6', { empresaVista });
     window.open(res.exportUrl, '_blank');
   } catch (e) { if (!handleAuthError(e)) alert('No se pudo exportar XLSX: ' + e.message); }
 }
 async function generateExecutivePdfV6(){
   try {
     const empresaVista = document.getElementById('entEmpresa')?.value || getCurrentEmpresa();
-    const res = await apiGet('generateExecutivePdfV6', { empresaVista: empresaVista === 'ALL' ? getCurrentEmpresa() : empresaVista });
+    const res = await apiGet('generateExecutivePdfV6', { empresaVista });
     window.open(res.pdfUrl, '_blank');
   } catch (e) { if (!handleAuthError(e)) alert('No se pudo generar PDF: ' + e.message); }
 }

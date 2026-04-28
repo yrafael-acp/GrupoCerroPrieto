@@ -112,3 +112,30 @@ function applySessionData(res) {
     sessionStorage.setItem('tokenGrifo', res.token || '');
     sessionStorage.setItem('tokenExpGrifo', res.sessionExpiresAt || '');
 }
+
+
+function bootstrapProtectedView(options = {}) {
+    const sess = getCurrentUser();
+    const role = getCurrentRole();
+    const token = getSessionToken();
+    const roles = options.roles || [];
+
+    if (!sess || !role || !token || isSessionExpired()) {
+        sessionStorage.clear();
+        window.location.href = 'index.html';
+        return false;
+    }
+
+    currentUser = sess;
+    injectSessionStyles();
+    renderUserBadge();
+
+    if (roles.length && !roles.includes(role)) {
+        alert(options.forbiddenMessage || 'No tienes permisos para acceder a este módulo.');
+        window.location.href = 'index.html';
+        return false;
+    }
+
+    return true;
+}
+

@@ -15,8 +15,15 @@ async function handleLogin() {
 
     try {
         const resp = await fetch(`${WEB_APP_URL}?action=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
+        const raw = await resp.text();
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const res = await resp.json();
+
+        let res;
+        try {
+            res = JSON.parse(raw);
+        } catch (_) {
+            throw new Error(raw || 'Respuesta inválida del servidor');
+        }
 
         if (res.auth === 'OK') {
             applySessionData(res);
@@ -27,10 +34,11 @@ async function handleLogin() {
                 startSession(getCurrentUser());
             }
         } else {
-            showLoginError(res.msg || 'Credenciales incorrectas.');
+            showLoginError(res.msg || res.message || 'Credenciales incorrectas.');
         }
     } catch (e) {
-        showLoginError('Error de conexión. Intenta nuevamente.');
+        const msg = (e && e.message ? e.message : 'Error de conexión. Intenta nuevamente.');
+        showLoginError(msg.includes('HTTP ') ? 'Error de conexión. Intenta nuevamente.' : msg);
     } finally {
         btn.textContent = 'Ingresar →';
         btn.disabled = false;
